@@ -263,6 +263,10 @@ var LS_URL='spmm_land_api', LS_NAME='spmm_land_name',
 var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={}, bootDone=false;
 
 function $(i){return document.getElementById(i)}
+/* Safe setters. A renamed/removed element used to throw
+   "Cannot set properties of null" and kill the whole render. */
+function setText(i,v){ var e=$(i); if(e) e.textContent=v; return e; }
+function setHtml(i,v){ var e=$(i); if(e) e.innerHTML=v; return e; }
 function esc(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
   return String(s==null?'':s).replace(/[&<>"]/g,function(c){return m[c]})}
 function toast(m,k){var t=$('toast');t.textContent=m;t.className='toast show'+(k?' '+k:'');
@@ -384,7 +388,7 @@ function boot(){
     DB=d; fillPickers();
     var savedName=''; try{savedName=localStorage.getItem(LS_NAME)||''}catch(e){}
     if(savedName){ $('gName').value=savedName; if(!ME) autoEnter(savedName); }
-    $('gateHint').textContent='';
+    setText('gateHint','');
   }).catch(function(e){ busy(false);
     if(!bootDone){ toast(e.message,'err'); $('gateHint').textContent=e.message; } });
 }
@@ -447,7 +451,7 @@ function loadWork(showSpinner){
     renderAll(d);
   }).catch(function(e){
     if(showSpinner) busy(false);
-    if(!ALL.length) $('tasks').innerHTML='<div class="blank">'+esc(e.message)+'</div>';
+    if(!ALL.length) setHtml('tasks','<div class="blank">'+esc(e.message)+'</div>');
     else toast(e.message,'err');
   });
 }
@@ -457,10 +461,10 @@ function renderAll(d){
   d=d||{};
   ALL=d.all||[];
   var t=d.totals||{};
-  $('kAll').textContent=t.plans||ALL.length||0;
-  $('kDone').textContent=t.done||0;
-  $('kOpen').textContent=t.open||((d.pending||[]).length);
-  $('kOver').textContent=t.overdue||0;
+  setText('kAll', t.plans!=null?t.plans:(ALL.length||0));
+  setText('kDone', t.done||0);
+  setText('kOpen', t.open!=null?t.open:((d.pending||[]).length));
+  setText('kOver', t.overdue||0);
   renderWork({rows:d.pending||[]});
   renderHist();
 }
@@ -481,7 +485,7 @@ function renderHist(){
     if(HFILTER==='open') return !/complet|cancel/.test(s);
     return true;
   });
-  if(!rows.length){ $('hist').innerHTML='<div class="blank">Nothing here yet.</div>'; return; }
+  if(!rows.length){ setHtml('hist','<div class="blank">Nothing here yet.</div>'); return; }
   var h='';
   rows.forEach(function(r){
     var tg=tagFor(r.status);
@@ -493,16 +497,14 @@ function renderHist(){
     if(r.actual)  h+='<div class="h3" style="color:var(--teal2)">'+esc(r.actual)+'</div>';
     h+='</div><span class="tag '+tg[0]+'">'+tg[1]+'</span></div>';
   });
-  $('hist').innerHTML=h;
+  setHtml('hist', h);
 }
 
 function renderWork(d){
   ROWS=(d&&d.rows)||[];
-  var today=todayStr(), over=0, due=0;
-  ROWS.forEach(function(r){ if(r.overdue) over++; else if(r.pkey===today) due++; });
-  $('kOpen').textContent=ROWS.length; $('kOver').textContent=over; $('kToday').textContent=due;
-
-  if(!ROWS.length){ $('tasks').innerHTML='<div class="blank">Nothing pending 🎉</div>'; return; }
+  var today=todayStr();
+  // Counters are owned by renderAll() now — this function only draws the list.
+  if(!ROWS.length){ setHtml('tasks','<div class="blank">Nothing pending 🎉</div>'); return; }
   var h='';
   ROWS.forEach(function(r,i){
     h+='<div class="task'+(r.overdue?' od':'')+'" id="tk'+i+'">';
@@ -519,7 +521,7 @@ function renderWork(d){
       +'<textarea id="tx'+i+'" placeholder="Tell us what happened"></textarea></div>';
     h+='<button class="btn" id="bt'+i+'" onclick="saveOne('+i+')">Save</button></div>';
   });
-  $('tasks').innerHTML=h;
+  setHtml('tasks', h);
 }
 
 /* one delegated handler covers every status pill, current and future */
