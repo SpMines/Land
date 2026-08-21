@@ -21,16 +21,22 @@ body{background:#F2F6F5;color:var(--ink);font-size:15px;line-height:1.5}
 /* ---------- header + nav ---------- */
 .top{background:linear-gradient(135deg,#0B3B3A 0%,#0E7C72 100%);color:#fff;position:sticky;top:0;z-index:30;
      box-shadow:0 4px 20px rgba(11,59,58,.18)}
-.top .in{width:90vw;margin:0 auto;padding:16px 0 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:60px}
-.top .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8FD3CA;font-weight:600}
-.top h1{font-size:20px;font-weight:700;line-height:1.15;letter-spacing:-.3px}
-.top .right{margin-left:auto;display:flex;align-items:center;gap:9px}
-.who{font-size:13px;color:#C6E7E2;font-weight:600}
+/* The bar used to borrow its bottom padding from the nav, so on the sign-in
+   screen (nav hidden) everything sat squashed against the edge. It now owns
+   its own spacing, and drops the extra padding only when the nav is there. */
+.top .in{width:90vw;margin:0 auto;padding:20px 0;display:flex;align-items:center;
+         gap:20px;flex-wrap:wrap;min-height:72px}
+.top:has(.nav:not([style*="none"])) .in{padding-bottom:4px}
+.top .brand{display:flex;flex-direction:column;justify-content:center;gap:5px}
+.top .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8FD3CA;font-weight:600;line-height:1}
+.top h1{font-size:21px;font-weight:700;line-height:1;letter-spacing:-.3px}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.who{font-size:13px;color:#C6E7E2;font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghost{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;
        font:600 12.5px Jost,sans-serif;padding:8px 14px;border-radius:9px;cursor:pointer;transition:.15s}
 .ghost:hover{background:rgba(255,255,255,.2)}
 
-.nav{width:90vw;margin:0 auto;display:flex;gap:4px;padding-top:14px;overflow-x:auto;scrollbar-width:none}
+.nav{width:90vw;margin:0 auto;display:flex;gap:4px;padding-top:16px;overflow-x:auto;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .nav a{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:11px 16px;border-radius:11px 11px 0 0;
        color:#A9DCD5;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;border-bottom:3px solid transparent}
@@ -123,8 +129,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
 .tag{font-size:10px;font-weight:700;border-radius:6px;padding:4px 10px;white-space:nowrap}
 .tag.g{background:#E4F7EC;color:var(--green)} .tag.a{background:#FFF6E3;color:var(--gold)}
 .tag.r{background:#FDEBEE;color:var(--red)} .tag.d{background:#EFF2F1;color:var(--mute)}
-#histSeg{margin-bottom:14px}
-#histSeg .o{min-width:0;padding:9px 16px;font-size:13px;flex:0 0 auto}
+#histSeg{margin-bottom:14px;flex-wrap:wrap}
+#histSeg .o{flex:0 0 auto;min-width:0;padding:9px 16px;font-size:13px}
 
 /* ---------- overlays ---------- */
 .ov{position:fixed;inset:0;background:rgba(11,26,24,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:60;backdrop-filter:blur(3px)}
@@ -155,10 +161,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
 @media(max-width:860px){
   /* Phone: heavier type, bigger targets, and the nav moves to the bottom
      where a thumb can reach it. */
-  body{font-size:16px;font-weight:500;padding-bottom:72px}
-  .wrap{width:94vw;padding:18px 0 24px}
-  .top .in{width:94vw;padding:14px 0 0}
+  body{font-size:16px;font-weight:500;padding-bottom:78px}
+  .wrap{width:94vw;padding:16px 0 24px}
+
+  /* Header: title on its own line, the controls on the next one. Letting
+     them share a row made the name and buttons ride over the title. */
+  .top{position:static}                      /* frees the screen on a phone */
+  .top .in{width:94vw;padding:16px 0;flex-wrap:wrap;gap:12px;min-height:0;align-items:center}
+  .top .brand{width:100%}
   .top h1{font-size:21px}
+  .top .right{margin-left:0;width:100%;justify-content:flex-start;gap:8px;flex-wrap:nowrap}
+  .who{flex:1;min-width:0;max-width:none;font-size:13.5px}
+  .ghost{flex:0 0 auto;padding:8px 12px;font-size:12px}
+
+  /* Chips scroll sideways rather than stacking on top of each other. */
+  .seg{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+       padding-bottom:2px;margin-right:-3vw}
+  .seg::-webkit-scrollbar{display:none}
+  .seg .o{flex:0 0 auto;min-width:0;white-space:nowrap}
+  #scopeSeg .o{flex:1 1 0;min-width:0}       /* Day/Week/Month still share the row */
+  #histSeg{margin-bottom:12px}
+  #histSeg .o{padding:10px 15px;font-size:13.5px}
   .nav{position:fixed;bottom:0;left:0;right:0;width:100%;margin:0;padding:0;background:#fff;
        border-top:1.5px solid var(--line);z-index:40;box-shadow:0 -4px 20px rgba(11,59,58,.10);gap:0}
   .nav a{flex:1;flex-direction:column;gap:3px;padding:9px 4px 8px;border-radius:0;border-bottom:none;
@@ -178,7 +201,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
   label{font-size:11.5px;color:#4A5B57}
   input,select,textarea{padding:14px 13px;border-radius:12px}
   .btn{padding:16px;font-size:16.5px;border-radius:13px}
-  .seg .o{padding:13px 8px;font-size:14px}
   .task{padding:16px 15px}
   .t1{font-size:17px} .t2{font-size:12.5px} .t3{font-size:14px}
   .hrow{padding:14px}.h1{font-size:15.5px}
@@ -192,7 +214,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
 
 <div class="top">
   <div class="in">
-    <div><div class="k">SPMM · Land Acquisition</div><h1>Field App</h1></div>
+    <div class="brand"><div class="k">SPMM · Land Acquisition</div><h1>Field App</h1></div>
     <div class="right">
       <span class="who" id="who"></span>
       <button class="ghost" id="switchBtn" onclick="signOut()" style="display:none">Switch user</button>
