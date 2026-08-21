@@ -47,7 +47,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
 
 /* ---------- layout ---------- */
 .cols{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
-.kps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.kps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .kp{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
 .kp .n{font-size:24px;font-weight:600;line-height:1}
 .kp .l{font-size:11px;color:var(--mute);margin-top:5px}
@@ -63,6 +63,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
 .pill{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:3px 8px;margin-left:7px}
 .pill.r{background:#FDEAEA;color:var(--red)} .pill.a{background:#FFF6E5;color:var(--gold)}
 .blank{text-align:center;color:var(--mute);padding:38px 14px;font-size:14px;background:#fff;border:1px dashed var(--line);border-radius:13px}
+.hrow{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px}
+.hrow .hd{flex:1;min-width:0}
+.hrow .h1{font-size:14px;font-weight:600}
+.hrow .h2{font-size:11.5px;color:var(--mute);margin-top:2px}
+.hrow .h3{font-size:12.5px;color:#4B5654;margin-top:6px}
+.tag{font-size:10px;font-weight:700;border-radius:6px;padding:3px 9px;white-space:nowrap}
+.tag.g{background:#E3F6EC;color:var(--green)} .tag.a{background:#FFF6E5;color:var(--gold)}
+.tag.r{background:#FDEAEA;color:var(--red)} .tag.d{background:#F1F3F3;color:var(--mute)}
+#histSeg .o{min-width:0;padding:7px 14px;font-size:12.5px}
 /* sign-in sits dead centre of the space under the header */
 #gate{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 190px)}
 .gatecard{width:100%;max-width:440px;text-align:center}
@@ -93,7 +102,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
   .wrap{width:94vw;padding:16px 0 50px}
   .top .in{width:94vw;padding:14px 0}
   .grid2{grid-template-columns:1fr}
-  .kps{grid-template-columns:repeat(3,1fr);gap:8px}
+  .kps{grid-template-columns:repeat(2,1fr);gap:8px}
   #gate{min-height:auto;padding-top:28px;align-items:flex-start}
   .kp{padding:11px 12px}.kp .n{font-size:20px}
 }
@@ -125,15 +134,38 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
   <!-- app -->
   <div id="app" style="display:none">
     <div class="kps">
-      <div class="kp"><div class="n" id="kOpen">0</div><div class="l">Open</div></div>
+      <div class="kp"><div class="n" id="kAll">0</div><div class="l">Total plans</div></div>
+      <div class="kp g"><div class="n" id="kDone">0</div><div class="l">Completed</div></div>
+      <div class="kp a"><div class="n" id="kOpen">0</div><div class="l">Pending</div></div>
       <div class="kp r"><div class="n" id="kOver">0</div><div class="l">Overdue</div></div>
-      <div class="kp g"><div class="n" id="kToday">0</div><div class="l">Due today</div></div>
     </div>
 
     <div class="cols">
       <div>
         <div class="h" style="margin-bottom:10px">My pending work</div>
         <div id="tasks"><div class="blank">Loading…</div></div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin:22px 0 10px;flex-wrap:wrap">
+          <div class="h" style="margin:0">All my work</div>
+          <div class="seg" id="histSeg" style="margin-left:auto;flex:0 0 auto">
+            <div class="o on" data-h="all">All</div>
+            <div class="o" data-h="done">Completed</div>
+            <div class="o" data-h="open">Pending</div>
+          </div>
+        </div>
+        <div id="hist"><div class="blank">Loading…</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="h">My report</div>
+        <div class="grid2">
+          <div class="f"><label>From</label><input id="rFrom" type="date"></div>
+          <div class="f"><label>To</label><input id="rTo" type="date"></div>
+        </div>
+        <button class="btn sec" id="pdfBtn" onclick="downloadPdf()">Download PDF</button>
+        <div style="font-size:11.5px;color:var(--mute);margin-top:9px">
+          Planned, pending and completed work. Leave the dates blank for everything.
+        </div>
       </div>
 
       <div class="card">
@@ -186,8 +218,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
 <div class="toast" id="toast"></div>
 
 <script>
+/* ══ PASTE YOUR APPS SCRIPT /exec URL HERE, then upload to Netlify ══
+   Sheet ▸ Report ▸ Settings ▸ Field App link
+   Without this every visitor sees "set the backend first" — the URL used
+   to live only in whoever configured it browser's storage. */
+var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbxKzD-VXRf2NB32uyYM8F32awa2bM0SsRotoIVPq1hwYYbQmRrWw08MdVendRwgW1z1/exec';
+
 var LS_URL='spmm_land_api', LS_NAME='spmm_land_name';
-var API='', ME='', ROWS=[], SCOPE='day', DB={};
+var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={};
 
 function $(i){return document.getElementById(i)}
 function esc(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
@@ -239,6 +277,7 @@ function saveSettings(){
 /* ---------------- boot / sign in ---------------- */
 function boot(){
   try{ API=localStorage.getItem(LS_URL)||''; }catch(e){}
+  if(!API) API=DEFAULT_API;              // built-in default for everyone else
   if(!API){
     $('gateHint').textContent='No backend set yet — open Settings and paste the Web App URL.';
     $('gName').outerHTML='<select id="gName"><option value="">Set the backend first</option></select>';
@@ -271,14 +310,14 @@ function enter(){
   if(!n){ toast('Pick your name','err'); return; }
   ME=n;
   busy(true);
-  call('myWork',{name:ME}).then(function(d){
+  call('myAll',{name:ME}).then(function(d){
     busy(false);
     if(!d || d.ok===false){ toast(d&&d.msg||'Could not sign in','err'); return; }
     try{ localStorage.setItem(LS_NAME,ME); }catch(e){}
     $('gate').style.display='none'; $('app').style.display='';
     $('who').textContent=ME; $('switchBtn').style.display='';
     $('pDate').value=todayStr();
-    renderWork(d);
+    renderAll(d);
   }).catch(function(e){ busy(false); toast(e.message,'err') });
 }
 
@@ -291,8 +330,52 @@ function signOut(){
 /* ---------------- my work ---------------- */
 function loadWork(){
   $('tasks').innerHTML='<div class="blank">Loading…</div>';
-  call('myWork',{name:ME}).then(renderWork)
+  call('myAll',{name:ME}).then(renderAll)
     .catch(function(e){ $('tasks').innerHTML='<div class="blank">'+esc(e.message)+'</div>' });
+}
+
+/* one round-trip fills the counters, the action list and the history */
+function renderAll(d){
+  d=d||{};
+  ALL=d.all||[];
+  var t=d.totals||{};
+  $('kAll').textContent=t.plans||ALL.length||0;
+  $('kDone').textContent=t.done||0;
+  $('kOpen').textContent=t.open||((d.pending||[]).length);
+  $('kOver').textContent=t.overdue||0;
+  renderWork({rows:d.pending||[]});
+  renderHist();
+}
+
+function tagFor(st){
+  var s=String(st||'').toLowerCase();
+  if(/complet/.test(s)) return ['g','Completed'];
+  if(/overdue/.test(s)) return ['r','Overdue'];
+  if(/postpon/.test(s)) return ['a','Postponed'];
+  if(/cancel/.test(s))  return ['d','Cancelled'];
+  return ['a','Pending'];
+}
+
+function renderHist(){
+  var rows=ALL.filter(function(r){
+    var s=String(r.status||'').toLowerCase();
+    if(HFILTER==='done') return /complet/.test(s);
+    if(HFILTER==='open') return !/complet|cancel/.test(s);
+    return true;
+  });
+  if(!rows.length){ $('hist').innerHTML='<div class="blank">Nothing here yet.</div>'; return; }
+  var h='';
+  rows.forEach(function(r){
+    var tg=tagFor(r.status);
+    h+='<div class="hrow"><div class="hd">';
+    h+='<div class="h1">'+esc(r.label||'Task')+'</div>';
+    h+='<div class="h2">'+esc(r.area||'')+(r.pdate?' · planned '+esc(r.pdate):'')
+      +(r.adate?' · done '+esc(r.adate):'')+'</div>';
+    if(r.planned) h+='<div class="h3">'+esc(r.planned)+'</div>';
+    if(r.actual)  h+='<div class="h3" style="color:var(--teal2)">'+esc(r.actual)+'</div>';
+    h+='</div><span class="tag '+tg[0]+'">'+tg[1]+'</span></div>';
+  });
+  $('hist').innerHTML=h;
 }
 
 function renderWork(d){
@@ -326,6 +409,10 @@ document.addEventListener('click', function(ev){
   var o=ev.target.closest ? ev.target.closest('.seg .o') : null;
   if(!o) return;
   var seg=o.parentNode;
+  if(seg.id==='histSeg'){
+    Array.prototype.forEach.call(seg.querySelectorAll('.o'),function(x){x.classList.remove('on')});
+    o.classList.add('on'); HFILTER=o.getAttribute('data-h'); renderHist(); return;
+  }
   var isScope = seg.id==='scopeSeg';
   var was=o.classList.contains('on');
   Array.prototype.forEach.call(seg.querySelectorAll('.o'),function(x){x.classList.remove('on')});
@@ -374,6 +461,25 @@ function savePlan(){
         loadWork();
       } else toast((res&&res.msg)||'Failed','err');
     }).catch(function(e){ busy(false); b.disabled=false; toast(e.message,'err') });
+}
+
+/* ---------------- my report (PDF) ---------------- */
+function downloadPdf(){
+  var b=$('pdfBtn'); b.disabled=true; b.textContent='Preparing…'; busy(true);
+  call('myPdf',{name:ME, from:$('rFrom').value, to:$('rTo').value})
+    .then(function(res){
+      busy(false); b.disabled=false; b.textContent='Download PDF';
+      if(!res || !res.ok || !res.base64){ toast((res&&res.msg)||'Could not build the PDF','err'); return; }
+      var bin=atob(res.base64), bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+      var url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+      var a=document.createElement('a');
+      a.href=url; a.download=res.filename||('Work Plan - '+ME+'.pdf');
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1500);
+      toast('Downloaded ✓','ok');
+    })
+    .catch(function(e){ busy(false); b.disabled=false; b.textContent='Download PDF'; toast(e.message,'err'); });
 }
 
 boot();
