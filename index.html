@@ -96,6 +96,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
 .t3{font-size:13.5px;color:#3E4E4B;margin:10px 0 13px;font-weight:500}
 .pill{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:3px 9px;margin-left:7px}
 .pill.r{background:#FDEBEE;color:var(--red)} .pill.a{background:#FFF6E3;color:var(--gold)}
+.bd{display:flex;flex-direction:column;gap:9px}
+.bdrow{display:flex;align-items:center;gap:12px}
+.bdrow .bl{font-size:13px;font-weight:600;width:96px;flex:0 0 auto}
+.bdrow .bbar{flex:1;height:9px;border-radius:6px;background:#EEF3F1;overflow:hidden}
+.bdrow .bbar i{display:block;height:100%;border-radius:6px;transition:width .4s}
+.bdrow .bn{font-size:13px;font-weight:700;width:52px;text-align:right;flex:0 0 auto}
+.bdrow.done .bbar i{background:var(--green)} .bdrow.done .bn{color:var(--green)}
+.bdrow.pend .bbar i{background:var(--gold)}  .bdrow.pend .bn{color:var(--gold)}
+.bdrow.over .bbar i{background:var(--red)}   .bdrow.over .bn{color:var(--red)}
+.bdrow.move .bbar i{background:var(--teal3)} .bdrow.move .bn{color:var(--teal2)}
+.bdrow.canc .bbar i{background:#B6C2BF}      .bdrow.canc .bn{color:var(--mute)}
+.seg .o b{font-weight:800;opacity:.75;margin-left:3px}
+.tag.m{background:#E4F3F1;color:var(--teal2)}
+.movenote{font-size:11.5px;color:var(--teal2);font-weight:600;margin-top:5px}
 .blank{text-align:center;color:var(--mute);padding:44px 16px;font-size:14px;background:#fff;
        border:1.5px dashed var(--line);border-radius:15px;font-weight:500}
 
@@ -216,6 +230,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
         <div class="kp a"><div class="n" id="kOpen">0</div><div class="l">Pending</div></div>
         <div class="kp r"><div class="n" id="kOver">0</div><div class="l">Overdue</div></div>
       </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="h">Where everything stands</div>
+        <div class="bd" id="bd"></div>
+      </div>
       <div class="qa">
         <div class="qbtn" onclick="go('pending')">
           <span class="qi">✎</span><div class="qt">Log an actual</div>
@@ -245,10 +263,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
       <div class="ttl">Completed &amp; history</div>
       <div class="sub">Everything on record against your name.</div>
       <div class="seg" id="histSeg">
-        <div class="o on" data-h="done">Completed</div>
-        <div class="o" data-h="all">All</div>
-        <div class="o" data-h="open">Still open</div>
+        <div class="o on" data-h="all">All <b id="cAll">0</b></div>
+        <div class="o" data-h="done">Completed <b id="cDone">0</b></div>
+        <div class="o" data-h="pending">Pending <b id="cPend">0</b></div>
+        <div class="o" data-h="overdue">Overdue <b id="cOver">0</b></div>
+        <div class="o" data-h="moved">Postponed <b id="cMoved">0</b></div>
+        <div class="o" data-h="cancelled">Cancelled <b id="cCanc">0</b></div>
       </div>
+      <div class="f"><input id="hSearch" placeholder="Search label, area or what happened…" oninput="renderHist()"></div>
       <div id="hist"><div class="blank">Loading…</div></div>
     </div>
 
@@ -324,11 +346,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
    Sheet ▸ Report ▸ Settings ▸ Field App link
    Without this every visitor sees "set the backend first" — the URL used
    to live only in whoever configured it browser's storage. */
-var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbzE3jjAONZ7a12Qsicp-coNoLZneQB2PvhrcUzsa_9VRykcIlFq1RyDI-HXEu9lyLvV/exec';
+var DEFAULT_API = 'https://script.google.com/macros/s/AKfycby9Nua9fexhcgI3VaXql0f8LlfBzAr82qkaoi5hzpEvoZs0Taun7Str3gszGa0xZQl3/exec';
 
 var LS_URL='spmm_land_api', LS_NAME='spmm_land_name',
     LS_BOOT='spmm_land_boot', LS_WORK='spmm_land_work';
-var API='', ME='', ROWS=[], ALL=[], HFILTER='done', SCOPE='day', DB={}, bootDone=false;
+var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={}, bootDone=false;
 
 function $(i){return document.getElementById(i)}
 /* Safe setters. A renamed/removed element used to throw
@@ -591,7 +613,35 @@ function renderAll(d){
   renderWork({rows:d.pending||[]});
   renderHist();
   renderUrgent();
+  renderBreakdown(t);
   setText('navPend', (d.pending||[]).length);
+}
+
+/* A proportional read of the whole record, not just four numbers. */
+function renderBreakdown(t){
+  t=t||{};
+  var total=t.plans||ALL.length||0;
+  var rows=[
+    ['done','Completed', t.done||0],
+    ['pend','Pending',   t.pending!=null?t.pending:0],
+    ['over','Overdue',   t.overdue||0],
+    ['move','Postponed', t.moved||0],
+    ['canc','Cancelled', t.cancelled||0]
+  ];
+  var s='';
+  rows.forEach(function(r){
+    var pct = total ? Math.round(r[2]/total*100) : 0;
+    s+='<div class="bdrow '+r[0]+'"><span class="bl">'+r[1]+'</span>'
+      +'<span class="bbar"><i style="width:'+pct+'%"></i></span>'
+      +'<span class="bn">'+r[2]+'</span></div>';
+  });
+  setHtml('bd', s);
+  setText('cAll',   total);
+  setText('cDone',  t.done||0);
+  setText('cPend',  t.pending!=null?t.pending:0);
+  setText('cOver',  t.overdue||0);
+  setText('cMoved', t.moved||0);
+  setText('cCanc',  t.cancelled||0);
 }
 
 /* Overview shows only what actually needs doing next. */
@@ -620,11 +670,22 @@ function tagFor(st){
   return ['a','Pending'];
 }
 
+/* Strip the postpone trail out of the plan text — it is shown separately. */
+function planOnly(s){ return String(s||'').split('[Postponed:')[0].trim(); }
+
 function renderHist(){
+  var q=($('hSearch')&&$('hSearch').value||'').toLowerCase().trim();
   var rows=ALL.filter(function(r){
     var s=String(r.status||'').toLowerCase();
-    if(HFILTER==='done') return /complet/.test(s);
-    if(HFILTER==='open') return !/complet|cancel/.test(s);
+    if(HFILTER==='done'      && !/complet/.test(s)) return false;
+    if(HFILTER==='pending'   && !(!/complet|cancel|overdue/.test(s))) return false;
+    if(HFILTER==='overdue'   && !/overdue/.test(s)) return false;
+    if(HFILTER==='cancelled' && !/cancel/.test(s)) return false;
+    if(HFILTER==='moved'     && !(r.moves>0)) return false;
+    if(q){
+      var hay=((r.label||'')+' '+(r.area||'')+' '+(r.planned||'')+' '+(r.actual||'')).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
     return true;
   });
   if(!rows.length){ setHtml('hist','<div class="blank">Nothing here yet.</div>'); return; }
@@ -635,9 +696,13 @@ function renderHist(){
     h+='<div class="h1">'+esc(r.label||'Task')+'</div>';
     h+='<div class="h2">'+esc(r.area||'')+(r.pdate?' · planned '+esc(r.pdate):'')
       +(r.adate?' · done '+esc(r.adate):'')+'</div>';
-    if(r.planned) h+='<div class="h3">'+esc(r.planned)+'</div>';
-    if(r.actual)  h+='<div class="h3" style="color:var(--teal2)">'+esc(r.actual)+'</div>';
-    h+='</div><span class="tag '+tg[0]+'">'+tg[1]+'</span></div>';
+    var pl=planOnly(r.planned);
+    if(pl) h+='<div class="h3">'+esc(pl)+'</div>';
+    if(r.actual) h+='<div class="h3" style="color:var(--teal2)">'+esc(r.actual)+'</div>';
+    if(r.moves) h+='<div class="movenote">\u21bb Postponed '+r.moves+'\u00d7'
+      +(r.movedFrom?' \u00b7 first set for '+esc(r.movedFrom):'')+'</div>';
+    h+='</div><span class="tag '+(r.moves&&!/complet|cancel/i.test(r.status)?'m':tg[0])+'">'
+      +(r.moves&&!/complet|cancel/i.test(r.status)?'Postponed':tg[1])+'</span></div>';
   });
   setHtml('hist', h);
 }
@@ -652,7 +717,10 @@ function renderWork(d){
     h+='<div class="task'+(r.overdue?' od':'')+'" id="tk'+i+'">';
     h+='<div class="t1">'+esc(r.label||'Task')+(r.overdue?'<span class="pill r">'+r.daysLate+'d late</span>':'')+'</div>';
     h+='<div class="t2">'+esc(r.area||'')+(r.pdate?' · planned '+esc(r.pdate):'')+'</div>';
-    if(r.planned) h+='<div class="t3">'+esc(r.planned)+'</div>';
+    var pt=planOnly(r.planned);
+    if(pt) h+='<div class="t3">'+esc(pt)+'</div>';
+    if(r.moves) h+='<div class="movenote" style="margin:-6px 0 10px">\u21bb Postponed '+r.moves+'\u00d7'
+      +(r.movedFrom?' \u00b7 first set for '+esc(r.movedFrom):'')+'</div>';
     h+='<div class="seg" data-i="'+i+'">';
     ['Completed','Postponed','Cancelled'].forEach(function(s){
       h+='<div class="o" data-s="'+s+'">'+s+'</div>'; });
