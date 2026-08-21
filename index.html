@@ -256,7 +256,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
    Sheet ▸ Report ▸ Settings ▸ Field App link
    Without this every visitor sees "set the backend first" — the URL used
    to live only in whoever configured it browser's storage. */
-var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbxHL-KsqrRMnimBM8OKAeWFxzOwX91nfyF__FCxbrYh4lQUGVEVhqxglf0fpoezC_d4/exec';
+var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbzE3jjAONZ7a12Qsicp-coNoLZneQB2PvhrcUzsa_9VRykcIlFq1RyDI-HXEu9lyLvV/exec';
 
 var LS_URL='spmm_land_api', LS_NAME='spmm_land_name',
     LS_BOOT='spmm_land_boot', LS_WORK='spmm_land_work';
@@ -424,9 +424,9 @@ function enter(){
   if(!n){ toast(bootDone?'Pick your name':'Still loading names \u2014 give it a second','err'); return; }
   ME=n;
   busy(true);
-  call('myAll',{name:ME}).then(function(d){
+  fetchWork().then(function(d){
     busy(false);
-    if(!d || d.ok===false){ toast(d&&d.msg||'Could not sign in','err'); return; }
+    if(!d || d.ok===false){ toast(explain(d),'err'); return; }
     try{ localStorage.setItem(LS_NAME,ME); }catch(e){}
     $('gate').style.display='none'; $('app').style.display='';
     $('who').textContent=ME; $('switchBtn').style.display='';
@@ -443,17 +443,56 @@ function signOut(){
 }
 
 /* ---------------- my work ---------------- */
+var backendOld=false;
+
+/* Older deployments only know 'myWork' (pending rows). If 'myAll' comes back
+   as an unknown action we degrade to that instead of showing an error — the
+   app keeps working, just without the history section. */
+function fetchWork(){
+  if(backendOld) return call('myWork',{name:ME}).then(asAll);
+  return call('myAll',{name:ME}).then(function(d){
+    if(d && d.ok===false && /unknown action/i.test(d.msg||'')){
+      backendOld=true;
+      return call('myWork',{name:ME}).then(asAll);
+    }
+    return d;
+  });
+}
+
+/* Shape an old myWork reply like a myAll one so the renderers do not care. */
+function asAll(d){
+  var rows=(d&&d.rows)||[];
+  var over=0; rows.forEach(function(r){ if(r.overdue) over++; });
+  return { ok:true, pending:rows,
+           all:rows.map(function(r){
+             return {sl:r.sl,area:r.area,label:r.label,planned:r.planned,pdate:r.pdate,
+                     pkey:r.pkey,adate:'',actual:'',status:r.overdue?'Overdue':'Pending'};
+           }),
+           totals:{plans:rows.length,done:0,open:rows.length,overdue:over},
+           legacy:true };
+}
+
 function loadWork(showSpinner){
   if(showSpinner) busy(true);
-  call('myAll',{name:ME}).then(function(d){
+  fetchWork().then(function(d){
     if(showSpinner) busy(false);
+    if(d && d.ok===false){ toast(explain(d),'err'); return; }
     try{ localStorage.setItem(LS_WORK+'_'+ME, JSON.stringify(d)); }catch(e){}
     renderAll(d);
+    if(d && d.legacy) setHtml('hist','<div class="blank">History needs the updated backend \u2014 Apps Script: Deploy \u25b8 Manage deployments \u25b8 pencil \u25b8 New version.</div>');
   }).catch(function(e){
     if(showSpinner) busy(false);
     if(!ALL.length) setHtml('tasks','<div class="blank">'+esc(e.message)+'</div>');
     else toast(e.message,'err');
   });
+}
+
+/* Turn a backend refusal into something the reader can act on. */
+function explain(res){
+  var m=(res&&res.msg)||'Failed';
+  if(/unknown action/i.test(m))
+    return 'The sheet is running an older version \u2014 Deploy \u25b8 Manage deployments \u25b8 pencil \u25b8 New version';
+  return m;
 }
 
 /* one round-trip fills the counters, the action list and the history */
@@ -560,7 +599,7 @@ function saveOne(i){
         $('tk'+i).className='task done';
         toast(st==='Postponed'?'Rescheduled ✓':'Saved ✓','ok');
         setTimeout(function(){loadWork(false)},700);
-      } else toast((res&&res.msg)||'Failed','err');
+      } else toast(explain(res),'err');
     }).catch(function(e){ busy(false); b.disabled=false; toast(e.message,'err') });
 }
 
@@ -579,7 +618,7 @@ function savePlan(){
         toast('Plan saved ✓','ok');
         $('pLabel').value=''; $('pText').value='';
         loadWork(false);
-      } else toast((res&&res.msg)||'Failed','err');
+      } else toast(explain(res),'err');
     }).catch(function(e){ busy(false); b.disabled=false; toast(e.message,'err') });
 }
 
@@ -589,6 +628,8 @@ function downloadPdf(){
   call('myPdf',{name:ME, from:$('rFrom').value, to:$('rTo').value}, 45000)
     .then(function(res){
       busy(false); b.disabled=false; b.textContent='Download PDF';
+      if(res && res.ok===false && /unknown action/i.test(res.msg||'')){
+        toast('PDF needs the updated backend \u2014 Deploy \u25b8 Manage deployments \u25b8 New version','err'); return; }
       if(!res || !res.ok || !res.base64){ toast((res&&res.msg)||'Could not build the PDF','err'); return; }
       var bin=atob(res.base64), bytes=new Uint8Array(bin.length);
       for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
