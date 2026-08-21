@@ -116,6 +116,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
 .seg .o b{font-weight:800;opacity:.75;margin-left:3px}
 .tag.m{background:#E4F3F1;color:var(--teal2)}
 .movenote{font-size:11.5px;color:var(--teal2);font-weight:600;margin-top:5px}
+.hintline{font-size:12px;color:var(--mute);margin-top:9px;line-height:1.45;font-weight:500}
+.hintline b{color:var(--teal2);font-weight:700}
 .blank{text-align:center;color:var(--mute);padding:44px 16px;font-size:14px;background:#fff;
        border:1.5px dashed var(--line);border-radius:15px;font-weight:500}
 
@@ -301,8 +303,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
       <div class="ttl">Add a plan</div>
       <div class="sub">Schedule work for yourself — it lands straight in the sheet.</div>
       <div class="card" style="max-width:620px">
-        <div class="f"><label>Area</label>
-          <input id="pArea" list="areaList" placeholder="Type or pick"><datalist id="areaList"></datalist></div>
+        <div class="f"><label>What are you planning for?</label>
+          <div class="seg" id="kindSeg">
+            <div class="o on" data-kind="fms">FMS project</div>
+            <div class="o" data-kind="custom">Custom / new</div>
+          </div>
+          <div class="hintline" id="kindHint"></div>
+        </div>
+
+        <div class="f" id="fmsWrap"><label>Which project?</label>
+          <select id="pAreaSel"><option value="">Select a project from the board</option></select></div>
+
+        <div class="f" id="customWrap" style="display:none"><label>Project name</label>
+          <input id="pArea" list="areaList" placeholder="e.g. Kaliabasa Project"><datalist id="areaList"></datalist></div>
         <div class="f"><label>Work label</label>
           <input id="pLabel" list="labelList" placeholder="e.g. LR Work"><datalist id="labelList"></datalist></div>
         <div class="f"><label>What is planned</label>
@@ -368,11 +381,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0
    Sheet ▸ Report ▸ Settings ▸ Field App link
    Without this every visitor sees "set the backend first" — the URL used
    to live only in whoever configured it browser's storage. */
-var DEFAULT_API = 'https://script.google.com/macros/s/AKfycby9Nua9fexhcgI3VaXql0f8LlfBzAr82qkaoi5hzpEvoZs0Taun7Str3gszGa0xZQl3/exec';
+var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbxu4_M7gG20U5xSm44YhUg0TDL9Cfup4pNVEPESvCNTOpibcfP84qcZ_A1SYKvn5Ip4/exec';
 
 var LS_URL='spmm_land_api', LS_NAME='spmm_land_name',
     LS_BOOT='spmm_land_boot', LS_WORK='spmm_land_work';
-var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={}, bootDone=false;
+var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', KIND='fms', DB={}, bootDone=false;
 
 function $(i){return document.getElementById(i)}
 /* Safe setters. A renamed/removed element used to throw
@@ -511,6 +524,13 @@ function fillPickers(){
     var o=document.createElement('option'); o.value=n; o.textContent=n; s.appendChild(o); });
   var al=$('areaList'); al.innerHTML='';
   (DB.areas||[]).forEach(function(a){var o=document.createElement('option');o.value=a;al.appendChild(o)});
+  var sel=$('pAreaSel');
+  if(sel){
+    sel.innerHTML='<option value="">Select a project from the board</option>';
+    (DB.areas||[]).forEach(function(a){
+      var o=document.createElement('option'); o.value=a; o.textContent=a; sel.appendChild(o); });
+  }
+  setKind(KIND);
   var ll=$('labelList'); ll.innerHTML='';
   (DB.labels||[]).forEach(function(a){var o=document.createElement('option');o.value=a;ll.appendChild(o)});
 }
@@ -554,6 +574,24 @@ function signOut(){
   ME=''; $('app').style.display='none'; $('gate').style.display='';
   $('nav').style.display='none';
   $('who').textContent=''; $('switchBtn').style.display='none';
+}
+
+/* ---------------- plan: FMS project vs custom ---------------- */
+/* Asking up front is what keeps the Area Report clean. An FMS pick is snapped
+   to the board's exact spelling; a custom one is stored as typed and stays out
+   of the board's report until it is linked. */
+function setKind(k){
+  KIND=k;
+  var isFms = (k==='fms');
+  var w1=$('fmsWrap'), w2=$('customWrap');
+  if(w1) w1.style.display = isFms ? '' : 'none';
+  if(w2) w2.style.display = isFms ? 'none' : '';
+  setHtml('kindHint', isFms
+    ? 'Work on a project already on the FMS board. It lands in <b>that project\u2019s Area Report</b> automatically.'
+    : 'Something new or one-off. Saved under its own name \u2014 <b>it will not appear in a board project\u2019s report</b> until it is linked.');
+  var seg=$('kindSeg');
+  if(seg) Array.prototype.forEach.call(seg.querySelectorAll('.o'),function(o){
+    o.className = (o.getAttribute('data-kind')===k) ? 'o on' : 'o'; });
 }
 
 /* ---------------- navigation ---------------- */
@@ -761,6 +799,7 @@ document.addEventListener('click', function(ev){
   var o=ev.target.closest ? ev.target.closest('.seg .o') : null;
   if(!o) return;
   var seg=o.parentNode;
+  if(seg.id==='kindSeg'){ setKind(o.getAttribute('data-kind')); return; }
   if(seg.id==='histSeg'){
     Array.prototype.forEach.call(seg.querySelectorAll('.o'),function(x){x.classList.remove('on')});
     o.classList.add('on'); HFILTER=o.getAttribute('data-h'); renderHist(); return;
@@ -798,17 +837,17 @@ function saveOne(i){
 
 /* ---------------- new plan ---------------- */
 function savePlan(){
-  var area=$('pArea').value.trim(), label=$('pLabel').value.trim(),
-      text=$('pText').value.trim(), date=$('pDate').value;
-  if(!area){ toast('Pick an area','err'); return; }
+  var area = (KIND==='fms') ? $('pAreaSel').value.trim() : $('pArea').value.trim();
+  var label=$('pLabel').value.trim(), text=$('pText').value.trim(), date=$('pDate').value;
+  if(!area){ toast(KIND==='fms'?'Choose a project from the board':'Type the project name','err'); return; }
   if(!label || !text){ toast('Add a label and what is planned','err'); return; }
   if(!date){ toast('Pick a date','err'); return; }
   var b=$('planBtn'); b.disabled=true; busy(true);
-  call('savePlan',{name:ME,areas:[area],label:label,text:text,date:date,scope:SCOPE})
+  call('savePlan',{name:ME,kind:KIND,areas:[area],label:label,text:text,date:date,scope:SCOPE})
     .then(function(res){
       busy(false); b.disabled=false;
       if(res && res.ok){
-        toast('Plan saved ✓','ok');
+        toast(res.msg||'Plan saved ✓','ok');
         $('pLabel').value=''; $('pText').value='';
         loadWork(false); go('pending');
       } else toast(explain(res),'err');
