@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPMM Land · Field App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#0F4C4A; --teal2:#0F766E; --soft:#EAF3F1;
+  --paper:#FBFCFC; --line:#DCE5E3; --ink:#16211F; --mute:#6B7A78;
+  --green:#137333; --gold:#8A6D00; --red:#B00020;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Jost,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:#F4F7F6;color:var(--ink);font-size:15px;line-height:1.5}
+
+/* ---------- shell ---------- */
+.top{background:var(--teal);color:#fff;position:sticky;top:0;z-index:30}
+.top .in{width:90vw;margin:0 auto;padding:16px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:64px}
+.top .k{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:#9CC4BF}
+.top h1{font-size:19px;font-weight:600;line-height:1.2}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.who{font-size:13px;color:#BFDBD7}
+.ghost{border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;font:600 12.5px Jost,sans-serif;padding:8px 14px;border-radius:9px;cursor:pointer}
+.ghost:hover{background:rgba(255,255,255,.1)}
+.wrap{width:90vw;margin:0 auto;padding:22px 0 60px}
+
+/* ---------- pieces ---------- */
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+.card+.card{margin-top:14px}
+.h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;font-family:inherit;color:var(--ink);background:#fff;outline:none}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+.f{margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{display:block;width:100%;border:0;cursor:pointer;background:var(--teal2);color:#fff;font:600 15px Jost,sans-serif;padding:13px;border-radius:11px}
+.btn:hover{background:#0c5f59}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.sec{background:var(--soft);color:var(--teal)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg .o{flex:1;min-width:92px;text-align:center;padding:10px 8px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-weight:600;color:var(--mute);cursor:pointer;background:#fff}
+.seg .o.on{background:var(--teal2);border-color:var(--teal2);color:#fff}
+
+/* ---------- layout ---------- */
+.cols{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
+.kps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.kp{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
+.kp .n{font-size:24px;font-weight:600;line-height:1}
+.kp .l{font-size:11px;color:var(--mute);margin-top:5px}
+.kp.g .n{color:var(--green)} .kp.a .n{color:var(--gold)} .kp.r .n{color:var(--red)}
+
+/* ---------- task ---------- */
+.task{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fff;margin-bottom:12px}
+.task.od{border-color:#F1CFCF;background:#FFFAFA}
+.task.done{opacity:.45}
+.t1{font-size:15.5px;font-weight:600}
+.t2{font-size:12px;color:var(--mute);margin-top:2px}
+.t3{font-size:13.5px;color:#4B5654;margin:9px 0 12px}
+.pill{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:3px 8px;margin-left:7px}
+.pill.r{background:#FDEAEA;color:var(--red)} .pill.a{background:#FFF6E5;color:var(--gold)}
+.blank{text-align:center;color:var(--mute);padding:38px 14px;font-size:14px;background:#fff;border:1px dashed var(--line);border-radius:13px}
+/* sign-in sits dead centre of the space under the header */
+#gate{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 190px)}
+.gatecard{width:100%;max-width:440px;text-align:center}
+.gatecard label{text-align:left}
+.gatecard .h{text-align:center}
+.gatecard select,.gatecard input{text-align:center;text-align-last:center}
+
+/* ---------- overlays ---------- */
+.ov{position:fixed;inset:0;background:rgba(16,33,31,.42);display:none;align-items:center;justify-content:center;padding:20px;z-index:60}
+.ov.show{display:flex}
+.sheet{background:#fff;border-radius:16px;width:100%;max-width:460px;padding:22px}
+.sheet{text-align:center}
+.sheet h3{font-size:18px;font-weight:600;margin-bottom:4px}
+.sheet p{font-size:12.5px;color:var(--mute);margin-bottom:16px}
+.sheet label{text-align:left}
+.sheet input{text-align:center}
+.load{position:fixed;inset:0;background:rgba(244,247,246,.72);display:none;align-items:center;justify-content:center;z-index:70}
+.load.show{display:flex}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--teal2);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:11px;font-size:14px;z-index:99;opacity:0;transition:.25s;pointer-events:none;max-width:90%}
+.toast.show{opacity:1}
+.toast.err{background:var(--red)} .toast.ok{background:var(--green)}
+
+/* ---------- mobile ---------- */
+@media(max-width:860px){
+  .cols{grid-template-columns:1fr}
+  .wrap{width:94vw;padding:16px 0 50px}
+  .top .in{width:94vw;padding:14px 0}
+  .grid2{grid-template-columns:1fr}
+  .kps{grid-template-columns:repeat(3,1fr);gap:8px}
+  #gate{min-height:auto;padding-top:28px;align-items:flex-start}
+  .kp{padding:11px 12px}.kp .n{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="in">
+  <div><div class="k">SPMM · Land Acquisition</div><h1>Field App</h1></div>
+  <div class="right">
+    <span class="who" id="who"></span>
+    <button class="ghost" id="switchBtn" onclick="signOut()" style="display:none">Switch user</button>
+    <button class="ghost" onclick="openSettings()">Settings</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+
+  <!-- sign in -->
+  <div id="gate">
+    <div class="card gatecard">
+      <div class="h">Sign in</div>
+      <div class="f"><label>Your name</label><select id="gName"><option value="">Loading…</option></select></div>
+      <button class="btn" onclick="enter()">Continue</button>
+      <div style="font-size:12px;color:var(--mute);margin-top:12px" id="gateHint"></div>
+    </div>
+  </div>
+
+  <!-- app -->
+  <div id="app" style="display:none">
+    <div class="kps">
+      <div class="kp"><div class="n" id="kOpen">0</div><div class="l">Open</div></div>
+      <div class="kp r"><div class="n" id="kOver">0</div><div class="l">Overdue</div></div>
+      <div class="kp g"><div class="n" id="kToday">0</div><div class="l">Due today</div></div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="h" style="margin-bottom:10px">My pending work</div>
+        <div id="tasks"><div class="blank">Loading…</div></div>
+      </div>
+
+      <div class="card">
+        <div class="h">Add a plan</div>
+        <div class="f"><label>Area</label>
+          <input id="pArea" list="areaList" placeholder="Type or pick"><datalist id="areaList"></datalist></div>
+        <div class="f"><label>Work label</label>
+          <input id="pLabel" list="labelList" placeholder="e.g. LR Work"><datalist id="labelList"></datalist></div>
+        <div class="f"><label>What is planned</label>
+          <textarea id="pText" placeholder="What will you do?"></textarea></div>
+        <div class="f"><label>Plan for</label>
+          <div class="seg" id="scopeSeg">
+            <div class="o on" data-sc="day">Day</div>
+            <div class="o" data-sc="week">Week</div>
+            <div class="o" data-sc="month">Month</div>
+          </div></div>
+        <div class="f"><label>Date</label><input id="pDate" type="date"></div>
+        <button class="btn" id="planBtn" onclick="savePlan()">Save plan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- settings lock -->
+<div class="ov" id="lockOv"><div class="sheet" style="max-width:360px">
+  <h3>Settings locked</h3>
+  <p>Enter the PIN to change the backend URL.</p>
+  <div class="f"><label>PIN</label>
+    <input id="lockPin" type="tel" inputmode="numeric" placeholder="••••"
+           onkeydown="if(event.key==='Enter')unlock()"></div>
+  <div class="grid2">
+    <button class="btn sec" onclick="closeLock()">Cancel</button>
+    <button class="btn" onclick="unlock()">Unlock</button>
+  </div>
+</div></div>
+
+<!-- settings -->
+<div class="ov" id="setOv"><div class="sheet">
+  <h3>Settings</h3>
+  <p>Paste the Apps Script Web App URL from the sheet: Report ▸ Settings ▸ Field App link.</p>
+  <div class="f"><label>Backend URL (/exec)</label>
+    <input id="sUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+  <div class="grid2">
+    <button class="btn sec" onclick="closeSettings()">Cancel</button>
+    <button class="btn" onclick="saveSettings()">Save</button>
+  </div>
+</div></div>
+
+<div class="load" id="load"><div class="spin"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var LS_URL='spmm_land_api', LS_NAME='spmm_land_name';
+var API='', ME='', ROWS=[], SCOPE='day', DB={};
+
+function $(i){return document.getElementById(i)}
+function esc(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
+  return String(s==null?'':s).replace(/[&<>"]/g,function(c){return m[c]})}
+function toast(m,k){var t=$('toast');t.textContent=m;t.className='toast show'+(k?' '+k:'');
+  setTimeout(function(){t.className='toast'},2800)}
+function busy(b){$('load').classList.toggle('show',!!b)}
+function todayStr(){var d=new Date(),p=function(n){return('0'+n).slice(-2)};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+
+/* Apps Script cannot answer a CORS preflight, so the body goes as
+   text/plain — that keeps the request "simple" and preflight-free. */
+function call(action, payload){
+  if(!API) return Promise.reject(new Error('Set the backend URL in Settings first.'));
+  var body = Object.assign({action:action}, payload||{});
+  return fetch(API,{
+    method:'POST', redirect:'follow',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(body)
+  }).then(function(r){return r.text()}).then(function(t){
+    try{ return JSON.parse(t); }
+    catch(e){ throw new Error('Backend did not return JSON. Check the URL and that access is set to "Anyone".'); }
+  });
+}
+
+/* ---------------- settings ---------------- */
+var SETTINGS_PIN='2210', unlocked=false;
+function openSettings(){
+  if(unlocked){ showSettings(); return; }
+  $('lockPin').value=''; $('lockOv').classList.add('show');
+  setTimeout(function(){$('lockPin').focus()},50);
+}
+function closeLock(){$('lockOv').classList.remove('show')}
+function unlock(){
+  if($('lockPin').value.trim()!==SETTINGS_PIN){ toast('Wrong PIN','err'); return; }
+  unlocked=true; closeLock(); showSettings();
+}
+function showSettings(){$('sUrl').value=API;$('setOv').classList.add('show')}
+function closeSettings(){$('setOv').classList.remove('show')}
+function saveSettings(){
+  var u=$('sUrl').value.trim();
+  if(u && !/^https:\/\/script\.google\.com\/.*\/exec$/.test(u)){
+    toast('That should end in /exec','err'); return;
+  }
+  API=u; try{localStorage.setItem(LS_URL,u)}catch(e){}
+  closeSettings(); toast('Saved','ok'); boot();
+}
+
+/* ---------------- boot / sign in ---------------- */
+function boot(){
+  try{ API=localStorage.getItem(LS_URL)||''; }catch(e){}
+  if(!API){
+    $('gateHint').textContent='No backend set yet — open Settings and paste the Web App URL.';
+    $('gName').outerHTML='<select id="gName"><option value="">Set the backend first</option></select>';
+    return;
+  }
+  busy(true);
+  call('boot').then(function(d){
+    busy(false);
+    if(!d || !d.ok){ toast((d&&d.msg)||'Could not load','err'); return; }
+    DB=d; fillPickers();
+    var savedName=''; try{savedName=localStorage.getItem(LS_NAME)||''}catch(e){}
+    if(savedName) $('gName').value=savedName;
+    $('gateHint').textContent='';
+  }).catch(function(e){ busy(false); toast(e.message,'err');
+    $('gateHint').textContent=e.message; });
+}
+
+function fillPickers(){
+  var s=$('gName'); s.innerHTML='<option value="">Select your name</option>';
+  (DB.names||[]).forEach(function(n){
+    var o=document.createElement('option'); o.value=n; o.textContent=n; s.appendChild(o); });
+  var al=$('areaList'); al.innerHTML='';
+  (DB.areas||[]).forEach(function(a){var o=document.createElement('option');o.value=a;al.appendChild(o)});
+  var ll=$('labelList'); ll.innerHTML='';
+  (DB.labels||[]).forEach(function(a){var o=document.createElement('option');o.value=a;ll.appendChild(o)});
+}
+
+function enter(){
+  var n=$('gName').value.trim();
+  if(!n){ toast('Pick your name','err'); return; }
+  ME=n;
+  busy(true);
+  call('myWork',{name:ME}).then(function(d){
+    busy(false);
+    if(!d || d.ok===false){ toast(d&&d.msg||'Could not sign in','err'); return; }
+    try{ localStorage.setItem(LS_NAME,ME); }catch(e){}
+    $('gate').style.display='none'; $('app').style.display='';
+    $('who').textContent=ME; $('switchBtn').style.display='';
+    $('pDate').value=todayStr();
+    renderWork(d);
+  }).catch(function(e){ busy(false); toast(e.message,'err') });
+}
+
+function signOut(){
+  try{ localStorage.removeItem(LS_NAME); }catch(e){}
+  ME=''; $('app').style.display='none'; $('gate').style.display='';
+  $('who').textContent=''; $('switchBtn').style.display='none';
+}
+
+/* ---------------- my work ---------------- */
+function loadWork(){
+  $('tasks').innerHTML='<div class="blank">Loading…</div>';
+  call('myWork',{name:ME}).then(renderWork)
+    .catch(function(e){ $('tasks').innerHTML='<div class="blank">'+esc(e.message)+'</div>' });
+}
+
+function renderWork(d){
+  ROWS=(d&&d.rows)||[];
+  var today=todayStr(), over=0, due=0;
+  ROWS.forEach(function(r){ if(r.overdue) over++; else if(r.pkey===today) due++; });
+  $('kOpen').textContent=ROWS.length; $('kOver').textContent=over; $('kToday').textContent=due;
+
+  if(!ROWS.length){ $('tasks').innerHTML='<div class="blank">Nothing pending 🎉</div>'; return; }
+  var h='';
+  ROWS.forEach(function(r,i){
+    h+='<div class="task'+(r.overdue?' od':'')+'" id="tk'+i+'">';
+    h+='<div class="t1">'+esc(r.label||'Task')+(r.overdue?'<span class="pill r">'+r.daysLate+'d late</span>':'')+'</div>';
+    h+='<div class="t2">'+esc(r.area||'')+(r.pdate?' · planned '+esc(r.pdate):'')+'</div>';
+    if(r.planned) h+='<div class="t3">'+esc(r.planned)+'</div>';
+    h+='<div class="seg" data-i="'+i+'">';
+    ['Completed','Postponed','Cancelled'].forEach(function(s){
+      h+='<div class="o" data-s="'+s+'">'+s+'</div>'; });
+    h+='</div>';
+    h+='<div class="f" id="dw'+i+'" style="display:none;margin-top:12px">'
+      +'<label id="dl'+i+'">Date</label><input id="dt'+i+'" type="date" value="'+today+'"></div>';
+    h+='<div class="f" style="margin-top:12px"><label>What happened</label>'
+      +'<textarea id="tx'+i+'" placeholder="Tell us what happened"></textarea></div>';
+    h+='<button class="btn" id="bt'+i+'" onclick="saveOne('+i+')">Save</button></div>';
+  });
+  $('tasks').innerHTML=h;
+}
+
+/* one delegated handler covers every status pill, current and future */
+document.addEventListener('click', function(ev){
+  var o=ev.target.closest ? ev.target.closest('.seg .o') : null;
+  if(!o) return;
+  var seg=o.parentNode;
+  var isScope = seg.id==='scopeSeg';
+  var was=o.classList.contains('on');
+  Array.prototype.forEach.call(seg.querySelectorAll('.o'),function(x){x.classList.remove('on')});
+  if(isScope){ o.classList.add('on'); SCOPE=o.getAttribute('data-sc'); return; }
+  var i=seg.getAttribute('data-i');
+  if(!was) o.classList.add('on');
+  var st = was ? '' : o.getAttribute('data-s');
+  seg.setAttribute('data-picked', st);
+  var dw=$('dw'+i); if(dw){ dw.style.display = st ? '' : 'none'; }
+  var dl=$('dl'+i); if(dl){ dl.textContent = (st==='Postponed') ? 'New date (postpone to)' : 'Date'; }
+});
+
+function saveOne(i){
+  var r=ROWS[i], seg=document.querySelector('.seg[data-i="'+i+'"]');
+  var st=seg.getAttribute('data-picked')||'';
+  if(!st){ toast('Pick Completed / Postponed / Cancelled','err'); return; }
+  var txt=$('tx'+i).value.trim(), dt=$('dt'+i).value;
+  if(st==='Completed' && !txt){ toast('Write what happened','err'); return; }
+  if(st==='Postponed' && !dt){ toast('Pick the new date','err'); return; }
+  var b=$('bt'+i); b.disabled=true; busy(true);
+  call('saveActual',{sl:r.sl,rowIx:r.rowIx,label:r.label,status:st,text:txt,adate:dt,newDate:dt})
+    .then(function(res){
+      busy(false); b.disabled=false;
+      if(res && res.ok){
+        $('tk'+i).className='task done';
+        toast(st==='Postponed'?'Rescheduled ✓':'Saved ✓','ok');
+        setTimeout(loadWork,700);
+      } else toast((res&&res.msg)||'Failed','err');
+    }).catch(function(e){ busy(false); b.disabled=false; toast(e.message,'err') });
+}
+
+/* ---------------- new plan ---------------- */
+function savePlan(){
+  var area=$('pArea').value.trim(), label=$('pLabel').value.trim(),
+      text=$('pText').value.trim(), date=$('pDate').value;
+  if(!area){ toast('Pick an area','err'); return; }
+  if(!label || !text){ toast('Add a label and what is planned','err'); return; }
+  if(!date){ toast('Pick a date','err'); return; }
+  var b=$('planBtn'); b.disabled=true; busy(true);
+  call('savePlan',{name:ME,areas:[area],label:label,text:text,date:date,scope:SCOPE})
+    .then(function(res){
+      busy(false); b.disabled=false;
+      if(res && res.ok){
+        toast('Plan saved ✓','ok');
+        $('pLabel').value=''; $('pText').value='';
+        loadWork();
+      } else toast((res&&res.msg)||'Failed','err');
+    }).catch(function(e){ busy(false); b.disabled=false; toast(e.message,'err') });
+}
+
+boot();
+</script>
+</body>
+</html>
