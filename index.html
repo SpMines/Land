@@ -222,32 +222,79 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
    Sheet ▸ Report ▸ Settings ▸ Field App link
    Without this every visitor sees "set the backend first" — the URL used
    to live only in whoever configured it browser's storage. */
-var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbxKzD-VXRf2NB32uyYM8F32awa2bM0SsRotoIVPq1hwYYbQmRrWw08MdVendRwgW1z1/exec';
+var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbxf5B7_CwVbid1Ux5jFk0idwfAQ8iij4PrMhwYOc547-0V3XEfdtdY5T4hMItZIwZ-j/exec';
 
 var LS_URL='spmm_land_api', LS_NAME='spmm_land_name';
-var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={};
+var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={}, bootDone=false;
 
 function $(i){return document.getElementById(i)}
 function esc(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
   return String(s==null?'':s).replace(/[&<>"]/g,function(c){return m[c]})}
 function toast(m,k){var t=$('toast');t.textContent=m;t.className='toast show'+(k?' '+k:'');
   setTimeout(function(){t.className='toast'},2800)}
-function busy(b){$('load').classList.toggle('show',!!b)}
+var busyCount=0;
+function busy(b){
+  busyCount = Math.max(0, busyCount + (b ? 1 : -1));
+  $('load').classList.toggle('show', busyCount > 0);
+}
 function todayStr(){var d=new Date(),p=function(n){return('0'+n).slice(-2)};
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
 
 /* Apps Script cannot answer a CORS preflight, so the body goes as
    text/plain — that keeps the request "simple" and preflight-free. */
-function call(action, payload){
-  if(!API) return Promise.reject(new Error('Set the backend URL in Settings first.'));
+/* Apps Script goes to sleep and its first request after that often dies or
+   crawls. So: hard timeout, then one automatic retry before bothering the
+   user. Errors are translated into something a field user can act on. */
+function callOnce(action, payload, ms){
   var body = Object.assign({action:action}, payload||{});
-  return fetch(API,{
+  /* The timeout is a Promise race, NOT an AbortController. When the page sits
+     inside an iframe/proxy, fetch options get structure-cloned to be posted
+     across, and an AbortSignal is not cloneable — that threw
+     "AbortSignal object could not be cloned" and killed every request.
+     Racing a timer needs nothing inside the options object, so it works
+     everywhere. */
+  var settled = false;
+  var request = fetch(API, {
     method:'POST', redirect:'follow',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify(body)
-  }).then(function(r){return r.text()}).then(function(t){
-    try{ return JSON.parse(t); }
-    catch(e){ throw new Error('Backend did not return JSON. Check the URL and that access is set to "Anyone".'); }
+  }).then(function(r){ return r.text(); })
+    .then(function(t){
+      settled = true;
+      try{ return JSON.parse(t); }
+      catch(e){
+        if(/<!DOCTYPE|<html/i.test(t)){
+          throw new Error('The backend asked for a login. In Apps Script: Deploy \u25b8 Manage deployments \u25b8 set "Who has access" to Anyone.');
+        }
+        throw new Error('Backend sent something unexpected. Check the URL in Settings.');
+      }
+    })
+    .catch(function(e){
+      settled = true;
+      if(e.name==='AbortError') throw new Error('The sheet took too long to answer. Try again.');
+      if(/Failed to fetch|NetworkError|Load failed|postMessage|cloned/i.test(e.message||''))
+        throw new Error('No connection to the sheet. Check your internet, then try again.');
+      throw e;
+    });
+
+  var timeout = new Promise(function(_, rej){
+    setTimeout(function(){
+      if(!settled) rej(new Error('The sheet took too long to answer. Try again.'));
+    }, ms||25000);
+  });
+
+  return Promise.race([request, timeout]);
+}
+
+function call(action, payload, ms){
+  if(!API) return Promise.reject(new Error('Set the backend URL in Settings first.'));
+  return callOnce(action, payload, ms).catch(function(e){
+    // One quiet retry — this is what rescues an Apps Script cold start.
+    if(/took too long|No connection/i.test(e.message)){
+      return new Promise(function(res){ setTimeout(res, 900); })
+        .then(function(){ return callOnce(action, payload, ms ? ms + 5000 : 30000); });
+    }
+    throw e;
   });
 }
 
@@ -286,6 +333,7 @@ function boot(){
   busy(true);
   call('boot').then(function(d){
     busy(false);
+    bootDone=true;
     if(!d || !d.ok){ toast((d&&d.msg)||'Could not load','err'); return; }
     DB=d; fillPickers();
     var savedName=''; try{savedName=localStorage.getItem(LS_NAME)||''}catch(e){}
@@ -306,8 +354,8 @@ function fillPickers(){
 }
 
 function enter(){
-  var n=$('gName').value.trim();
-  if(!n){ toast('Pick your name','err'); return; }
+  var el=$('gName'), n=el?el.value.trim():'';
+  if(!n){ toast(bootDone?'Pick your name':'Still loading names \u2014 give it a second','err'); return; }
   ME=n;
   busy(true);
   call('myAll',{name:ME}).then(function(d){
@@ -466,7 +514,7 @@ function savePlan(){
 /* ---------------- my report (PDF) ---------------- */
 function downloadPdf(){
   var b=$('pdfBtn'); b.disabled=true; b.textContent='Preparing…'; busy(true);
-  call('myPdf',{name:ME, from:$('rFrom').value, to:$('rTo').value})
+  call('myPdf',{name:ME, from:$('rFrom').value, to:$('rTo').value}, 45000)
     .then(function(res){
       busy(false); b.disabled=false; b.textContent='Download PDF';
       if(!res || !res.ok || !res.base64){ toast((res&&res.msg)||'Could not build the PDF','err'); return; }
