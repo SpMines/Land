@@ -9,134 +9,166 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --teal:#0F4C4A; --teal2:#0F766E; --soft:#EAF3F1;
-  --paper:#FBFCFC; --line:#DCE5E3; --ink:#16211F; --mute:#6B7A78;
-  --green:#137333; --gold:#8A6D00; --red:#B00020;
+  --teal:#0B3B3A; --teal2:#0E7C72; --teal3:#12A594;
+  --soft:#E8F4F1; --paper:#FBFDFC; --line:#DCE7E4; --ink:#0E1A18; --mute:#63756F;
+  --green:#0F8A43; --gold:#A87400; --red:#C0263C;
+  --shadow:0 1px 2px rgba(11,59,58,.05), 0 8px 24px rgba(11,59,58,.06);
+  --shadow2:0 2px 6px rgba(11,59,58,.08), 0 16px 40px rgba(11,59,58,.10);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:Jost,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:#F4F7F6;color:var(--ink);font-size:15px;line-height:1.5}
+body{background:#F2F6F5;color:var(--ink);font-size:15px;line-height:1.5}
 
-/* ---------- shell ---------- */
-.top{background:var(--teal);color:#fff;position:sticky;top:0;z-index:30}
-.top .in{width:90vw;margin:0 auto;padding:16px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:64px}
-.top .k{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:#9CC4BF}
-.top h1{font-size:19px;font-weight:700;line-height:1.2;letter-spacing:-.2px}
-.top .right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.who{font-size:13px;color:#BFDBD7}
-.ghost{border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;font:600 12.5px Jost,sans-serif;padding:8px 14px;border-radius:9px;cursor:pointer}
-.ghost:hover{background:rgba(255,255,255,.1)}
-.wrap{width:90vw;margin:0 auto;padding:22px 0 60px}
+/* ---------- header + nav ---------- */
+.top{background:linear-gradient(135deg,#0B3B3A 0%,#0E7C72 100%);color:#fff;position:sticky;top:0;z-index:30;
+     box-shadow:0 4px 20px rgba(11,59,58,.18)}
+.top .in{width:90vw;margin:0 auto;padding:16px 0 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:60px}
+.top .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8FD3CA;font-weight:600}
+.top h1{font-size:20px;font-weight:700;line-height:1.15;letter-spacing:-.3px}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.who{font-size:13px;color:#C6E7E2;font-weight:600}
+.ghost{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;
+       font:600 12.5px Jost,sans-serif;padding:8px 14px;border-radius:9px;cursor:pointer;transition:.15s}
+.ghost:hover{background:rgba(255,255,255,.2)}
+
+.nav{width:90vw;margin:0 auto;display:flex;gap:4px;padding-top:14px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:11px 16px;border-radius:11px 11px 0 0;
+       color:#A9DCD5;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;border-bottom:3px solid transparent}
+.nav a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav a.on{color:var(--teal);background:#F2F6F5;border-bottom-color:#F2F6F5;font-weight:700}
+.nav .ic{font-size:15px;line-height:1}
+.nav .cnt{background:rgba(255,255,255,.2);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700}
+.nav a.on .cnt{background:var(--teal2);color:#fff}
+
+.wrap{width:90vw;margin:0 auto;padding:24px 0 60px}
+.view{display:none}.view.on{display:block}
 
 /* ---------- pieces ---------- */
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
 .card+.card{margin-top:14px}
-.h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
-label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
-input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;font-family:inherit;color:var(--ink);background:#fff;outline:none}
+.h{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal2);margin-bottom:14px}
+.ttl{font-size:19px;font-weight:700;letter-spacing:-.3px;margin-bottom:3px}
+.sub{font-size:13px;color:var(--mute);margin-bottom:18px}
+label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:11px;font-size:16px;font-family:inherit;font-weight:500;color:var(--ink);background:#fff;outline:none;transition:.15s}
 textarea{min-height:84px;resize:vertical}
-input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+input:focus,select:focus,textarea:focus{border-color:var(--teal3);box-shadow:0 0 0 4px rgba(18,165,148,.14)}
 .f{margin-bottom:14px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.btn{display:block;width:100%;border:0;cursor:pointer;background:var(--teal2);color:#fff;font:700 15px Jost,sans-serif;padding:13px;border-radius:11px;transition:transform .08s,background .15s}
-.btn:active{transform:scale(.985)}
-.btn:hover{background:#0c5f59}
-.btn[disabled]{opacity:.5;cursor:default}
-.btn.sec{background:var(--soft);color:var(--teal)}
+.btn{display:block;width:100%;border:0;cursor:pointer;background:var(--teal2);color:#fff;font:700 15px Jost,sans-serif;
+     padding:14px;border-radius:12px;transition:transform .08s,background .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(14,124,114,.28)}
+.btn:hover{background:#0c6b62}.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.5;cursor:default;box-shadow:none}
+.btn.sec{background:var(--soft);color:var(--teal);box-shadow:none}
+.btn.sec:hover{background:#d9ece7}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg .o{flex:1;min-width:92px;text-align:center;padding:10px 8px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-weight:700;color:var(--mute);cursor:pointer;background:#fff;transition:transform .08s}
+.seg .o{flex:1;min-width:92px;text-align:center;padding:11px 8px;border:1.5px solid var(--line);border-radius:11px;
+        font-size:13.5px;font-weight:700;color:var(--mute);cursor:pointer;background:#fff;transition:.12s}
+.seg .o:hover{border-color:var(--teal3);color:var(--teal2)}
 .seg .o:active{transform:scale(.97)}
-.seg .o.on{background:var(--teal2);border-color:var(--teal2);color:#fff}
+.seg .o.on{background:var(--teal2);border-color:var(--teal2);color:#fff;box-shadow:0 3px 10px rgba(14,124,114,.26)}
 
-/* ---------- layout ---------- */
-.cols{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
-.kps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.kp{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
-.kp .n{font-size:24px;font-weight:700;line-height:1}
-.kp .l{font-size:11px;color:var(--mute);margin-top:5px}
+/* ---------- KPIs ---------- */
+.kps{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
+.kp{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px 17px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden}
+.kp:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--teal3)}
+.kp.g:before{background:var(--green)} .kp.a:before{background:var(--gold)} .kp.r:before{background:var(--red)}
+.kp .n{font-size:27px;font-weight:700;line-height:1;letter-spacing:-.5px}
+.kp .l{font-size:11px;color:var(--mute);margin-top:6px;font-weight:600;letter-spacing:.02em}
 .kp.g .n{color:var(--green)} .kp.a .n{color:var(--gold)} .kp.r .n{color:var(--red)}
 
+/* ---------- quick actions ---------- */
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:18px}
+.qbtn{background:#fff;border:1.5px solid var(--line);border-radius:15px;padding:18px 16px;cursor:pointer;
+      text-align:left;transition:.15s;box-shadow:var(--shadow)}
+.qbtn:hover{border-color:var(--teal3);transform:translateY(-2px);box-shadow:var(--shadow2)}
+.qbtn .qi{font-size:20px;margin-bottom:8px;display:block}
+.qbtn .qt{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.qbtn .qs{font-size:12px;color:var(--mute);margin-top:2px;font-weight:500}
+
 /* ---------- task ---------- */
-.task{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fff;margin-bottom:12px}
-.task.od{border-color:#F1CFCF;background:#FFFAFA}
+.task{border:1.5px solid var(--line);border-radius:15px;padding:17px;background:#fff;margin-bottom:12px;box-shadow:var(--shadow)}
+.task.od{border-color:#F0C9D0;background:linear-gradient(#FFF9FA,#fff)}
 .task.done{opacity:.45}
-.t1{font-size:15.5px;font-weight:700}
-.t2{font-size:12px;color:var(--mute);margin-top:2px}
-.t3{font-size:13.5px;color:#4B5654;margin:9px 0 12px}
-.pill{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:3px 8px;margin-left:7px}
-.pill.r{background:#FDEAEA;color:var(--red)} .pill.a{background:#FFF6E5;color:var(--gold)}
-.blank{text-align:center;color:var(--mute);padding:38px 14px;font-size:14px;background:#fff;border:1px dashed var(--line);border-radius:13px}
-.hrow{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px}
+.t1{font-size:16px;font-weight:700;letter-spacing:-.2px}
+.t2{font-size:12px;color:var(--mute);margin-top:3px;font-weight:600}
+.t3{font-size:13.5px;color:#3E4E4B;margin:10px 0 13px;font-weight:500}
+.pill{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:3px 9px;margin-left:7px}
+.pill.r{background:#FDEBEE;color:var(--red)} .pill.a{background:#FFF6E3;color:var(--gold)}
+.blank{text-align:center;color:var(--mute);padding:44px 16px;font-size:14px;background:#fff;
+       border:1.5px dashed var(--line);border-radius:15px;font-weight:500}
+
+/* ---------- history rows ---------- */
+.hrow{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+      border-radius:13px;padding:14px 16px;margin-bottom:9px;box-shadow:var(--shadow)}
 .hrow .hd{flex:1;min-width:0}
-.hrow .h1{font-size:14px;font-weight:600}
-.hrow .h2{font-size:11.5px;color:var(--mute);margin-top:2px}
-.hrow .h3{font-size:12.5px;color:#4B5654;margin-top:6px}
-.tag{font-size:10px;font-weight:700;border-radius:6px;padding:3px 9px;white-space:nowrap}
-.tag.g{background:#E3F6EC;color:var(--green)} .tag.a{background:#FFF6E5;color:var(--gold)}
-.tag.r{background:#FDEAEA;color:var(--red)} .tag.d{background:#F1F3F3;color:var(--mute)}
-#histSeg .o{min-width:0;padding:7px 14px;font-size:12.5px}
-/* sign-in sits dead centre of the space under the header */
-#gate{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 190px)}
+.hrow .h1{font-size:14.5px;font-weight:700}
+.hrow .h2{font-size:11.5px;color:var(--mute);margin-top:3px;font-weight:600}
+.hrow .h3{font-size:13px;color:#3E4E4B;margin-top:7px;font-weight:500}
+.tag{font-size:10px;font-weight:700;border-radius:6px;padding:4px 10px;white-space:nowrap}
+.tag.g{background:#E4F7EC;color:var(--green)} .tag.a{background:#FFF6E3;color:var(--gold)}
+.tag.r{background:#FDEBEE;color:var(--red)} .tag.d{background:#EFF2F1;color:var(--mute)}
+#histSeg{margin-bottom:14px}
+#histSeg .o{min-width:0;padding:9px 16px;font-size:13px;flex:0 0 auto}
+
+/* ---------- overlays ---------- */
+.ov{position:fixed;inset:0;background:rgba(11,26,24,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:60;backdrop-filter:blur(3px)}
+.ov.show{display:flex}
+.sheet{background:#fff;border-radius:18px;width:100%;max-width:460px;padding:24px;text-align:center;box-shadow:var(--shadow2)}
+.sheet h3{font-size:19px;font-weight:700;margin-bottom:4px}
+.sheet p{font-size:12.5px;color:var(--mute);margin-bottom:18px}
+.sheet label{text-align:left}
+.sheet input{text-align:center}
+.load{position:fixed;inset:0;background:rgba(242,246,245,.72);display:none;align-items:center;justify-content:center;z-index:70}
+.load.show{display:flex}
+.spin{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--teal3);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;
+       padding:13px 22px;border-radius:12px;font-size:14px;font-weight:600;z-index:99;opacity:0;transition:.25s;
+       pointer-events:none;max-width:90%;box-shadow:var(--shadow2)}
+.toast.show{opacity:1}
+.toast.err{background:var(--red)} .toast.ok{background:var(--green)}
+
+/* sign-in dead centre */
+#gate{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 210px)}
 .gatecard{width:100%;max-width:440px;text-align:center}
 .gatecard label{text-align:left}
 .gatecard .h{text-align:center}
 .gatecard select,.gatecard input{text-align:center;text-align-last:center}
 
-/* ---------- overlays ---------- */
-.ov{position:fixed;inset:0;background:rgba(16,33,31,.42);display:none;align-items:center;justify-content:center;padding:20px;z-index:60}
-.ov.show{display:flex}
-.sheet{background:#fff;border-radius:16px;width:100%;max-width:460px;padding:22px}
-.sheet{text-align:center}
-.sheet h3{font-size:18px;font-weight:600;margin-bottom:4px}
-.sheet p{font-size:12.5px;color:var(--mute);margin-bottom:16px}
-.sheet label{text-align:left}
-.sheet input{text-align:center}
-.load{position:fixed;inset:0;background:rgba(244,247,246,.72);display:none;align-items:center;justify-content:center;z-index:70}
-.load.show{display:flex}
-.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--teal2);border-radius:50%;animation:sp .8s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:11px;font-size:14px;z-index:99;opacity:0;transition:.25s;pointer-events:none;max-width:90%}
-.toast.show{opacity:1}
-.toast.err{background:var(--red)} .toast.ok{background:var(--green)}
-
 /* ---------- mobile ---------- */
 @media(max-width:860px){
-  /* Phone: heavier type, bigger touch targets, more air between blocks.
-     Field staff read this outdoors on a small screen — thin text loses. */
-  body{font-size:16px;font-weight:500}
-  .cols{grid-template-columns:1fr;gap:20px}
-  .wrap{width:94vw;padding:18px 0 60px}
-  .top{box-shadow:0 2px 14px rgba(15,76,74,.22)}
-  .top .in{width:94vw;padding:16px 0}
-  .top h1{font-size:22px;font-weight:700;letter-spacing:-.2px}
-  .top .k{font-size:11px;font-weight:600}
+  /* Phone: heavier type, bigger targets, and the nav moves to the bottom
+     where a thumb can reach it. */
+  body{font-size:16px;font-weight:500;padding-bottom:72px}
+  .wrap{width:94vw;padding:18px 0 24px}
+  .top .in{width:94vw;padding:14px 0 0}
+  .top h1{font-size:21px}
+  .nav{position:fixed;bottom:0;left:0;right:0;width:100%;margin:0;padding:0;background:#fff;
+       border-top:1.5px solid var(--line);z-index:40;box-shadow:0 -4px 20px rgba(11,59,58,.10);gap:0}
+  .nav a{flex:1;flex-direction:column;gap:3px;padding:9px 4px 8px;border-radius:0;border-bottom:none;
+         border-top:3px solid transparent;color:var(--mute);font-size:10.5px;font-weight:700}
+  .nav a .ic{font-size:19px}
+  .nav a.on{background:transparent;color:var(--teal2);border-top-color:var(--teal2)}
+  .nav .cnt{position:absolute;top:4px;margin-left:22px;background:var(--red);color:#fff;font-size:9.5px;padding:1px 6px}
+  .nav a.on .cnt{background:var(--red)}
+
   .grid2{grid-template-columns:1fr}
-
   .kps{grid-template-columns:repeat(2,1fr);gap:10px}
-  .kp{padding:14px 14px;border-radius:15px;border-width:1.5px}
-  .kp .n{font-size:26px;font-weight:700}
-  .kp .l{font-size:11.5px;font-weight:600;letter-spacing:.02em}
-
-  .h{font-size:12.5px;font-weight:700;letter-spacing:.07em}
-  .card{padding:18px 16px;border-radius:16px}
-  label{font-size:11.5px;font-weight:700;color:#54615F}
-  input,select,textarea{padding:14px 13px;border-radius:12px;font-weight:500;border-width:1.5px}
-  .btn{padding:16px;font-size:16.5px;font-weight:700;border-radius:13px}
-  .seg .o{padding:13px 8px;font-size:14px;font-weight:700;border-width:1.5px;border-radius:12px}
-
-  .task{padding:16px 15px;border-radius:16px;border-width:1.5px}
-  .t1{font-size:17px;font-weight:700;letter-spacing:-.2px}
-  .t2{font-size:12.5px;font-weight:600}
-  .t3{font-size:14px;font-weight:500;color:#3E4A48}
-  .pill{font-size:10.5px;padding:4px 9px}
-
-  .hrow{padding:14px;border-radius:14px;border-width:1.5px}
-  .h1{font-size:15.5px;font-weight:700}
-  .h2{font-size:12px;font-weight:600}
-  .h3{font-size:13.5px;font-weight:500}
-  .tag{font-size:10.5px;padding:4px 10px}
-  #histSeg .o{padding:9px 13px;font-size:13px}
-
-  .toast{font-size:15px;font-weight:600;padding:14px 20px;bottom:18px}
+  .kp{padding:15px}.kp .n{font-size:26px}.kp .l{font-size:11.5px}
+  .qa{grid-template-columns:1fr;gap:10px}
+  .h{font-size:12px}
+  .ttl{font-size:21px}
+  .card{padding:18px 16px}
+  label{font-size:11.5px;color:#4A5B57}
+  input,select,textarea{padding:14px 13px;border-radius:12px}
+  .btn{padding:16px;font-size:16.5px;border-radius:13px}
+  .seg .o{padding:13px 8px;font-size:14px}
+  .task{padding:16px 15px}
+  .t1{font-size:17px} .t2{font-size:12.5px} .t3{font-size:14px}
+  .hrow{padding:14px}.h1{font-size:15.5px}
+  .toast{font-size:15px;bottom:84px}
   #gate{min-height:auto;padding-top:24px;align-items:flex-start}
   .gatecard{padding:22px 18px}
 }
@@ -144,14 +176,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
 </head>
 <body>
 
-<div class="top"><div class="in">
-  <div><div class="k">SPMM · Land Acquisition</div><h1>Field App</h1></div>
-  <div class="right">
-    <span class="who" id="who"></span>
-    <button class="ghost" id="switchBtn" onclick="signOut()" style="display:none">Switch user</button>
-    <button class="ghost" onclick="openSettings()">Settings</button>
+<div class="top">
+  <div class="in">
+    <div><div class="k">SPMM · Land Acquisition</div><h1>Field App</h1></div>
+    <div class="right">
+      <span class="who" id="who"></span>
+      <button class="ghost" id="switchBtn" onclick="signOut()" style="display:none">Switch user</button>
+      <button class="ghost" onclick="openSettings()">Settings</button>
+    </div>
   </div>
-</div></div>
+  <nav class="nav" id="nav" style="display:none">
+    <a data-v="home"    onclick="go('home')"><span class="ic">▣</span><span>Overview</span></a>
+    <a data-v="pending" onclick="go('pending')"><span class="ic">○</span><span>Pending</span><span class="cnt" id="navPend">0</span></a>
+    <a data-v="done"    onclick="go('done')"><span class="ic">✓</span><span>Completed</span></a>
+    <a data-v="plan"    onclick="go('plan')"><span class="ic">＋</span><span>Add plan</span></a>
+    <a data-v="report"  onclick="go('report')"><span class="ic">↓</span><span>Report</span></a>
+  </nav>
+</div>
 
 <div class="wrap">
 
@@ -165,45 +206,57 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
     </div>
   </div>
 
-  <!-- app -->
   <div id="app" style="display:none">
-    <div class="kps">
-      <div class="kp"><div class="n" id="kAll">0</div><div class="l">Total plans</div></div>
-      <div class="kp g"><div class="n" id="kDone">0</div><div class="l">Completed</div></div>
-      <div class="kp a"><div class="n" id="kOpen">0</div><div class="l">Pending</div></div>
-      <div class="kp r"><div class="n" id="kOver">0</div><div class="l">Overdue</div></div>
+
+    <!-- OVERVIEW -->
+    <div class="view on" id="vhome">
+      <div class="kps">
+        <div class="kp"><div class="n" id="kAll">0</div><div class="l">Total plans</div></div>
+        <div class="kp g"><div class="n" id="kDone">0</div><div class="l">Completed</div></div>
+        <div class="kp a"><div class="n" id="kOpen">0</div><div class="l">Pending</div></div>
+        <div class="kp r"><div class="n" id="kOver">0</div><div class="l">Overdue</div></div>
+      </div>
+      <div class="qa">
+        <div class="qbtn" onclick="go('pending')">
+          <span class="qi">✎</span><div class="qt">Log an actual</div>
+          <div class="qs">Mark work done, postponed or cancelled</div></div>
+        <div class="qbtn" onclick="go('plan')">
+          <span class="qi">＋</span><div class="qt">Add a plan</div>
+          <div class="qs">Schedule new work for yourself</div></div>
+        <div class="qbtn" onclick="go('report')">
+          <span class="qi">↓</span><div class="qt">Download report</div>
+          <div class="qs">Your planned and actual work as a PDF</div></div>
+      </div>
+      <div class="card">
+        <div class="h">Needs attention first</div>
+        <div id="urgent"><div class="blank">Loading…</div></div>
+      </div>
     </div>
 
-    <div class="cols">
-      <div>
-        <div class="h" style="margin-bottom:10px">My pending work</div>
-        <div id="tasks"><div class="blank">Loading…</div></div>
+    <!-- PENDING -->
+    <div class="view" id="vpending">
+      <div class="ttl">My pending work</div>
+      <div class="sub">Pick a status, add what happened, then save.</div>
+      <div id="tasks"><div class="blank">Loading…</div></div>
+    </div>
 
-        <div style="display:flex;align-items:center;gap:12px;margin:22px 0 10px;flex-wrap:wrap">
-          <div class="h" style="margin:0">All my work</div>
-          <div class="seg" id="histSeg" style="margin-left:auto;flex:0 0 auto">
-            <div class="o on" data-h="all">All</div>
-            <div class="o" data-h="done">Completed</div>
-            <div class="o" data-h="open">Pending</div>
-          </div>
-        </div>
-        <div id="hist"><div class="blank">Loading…</div></div>
+    <!-- COMPLETED / ALL -->
+    <div class="view" id="vdone">
+      <div class="ttl">Completed &amp; history</div>
+      <div class="sub">Everything on record against your name.</div>
+      <div class="seg" id="histSeg">
+        <div class="o on" data-h="done">Completed</div>
+        <div class="o" data-h="all">All</div>
+        <div class="o" data-h="open">Still open</div>
       </div>
+      <div id="hist"><div class="blank">Loading…</div></div>
+    </div>
 
-      <div class="card" style="margin-bottom:14px">
-        <div class="h">My report</div>
-        <div class="grid2">
-          <div class="f"><label>From</label><input id="rFrom" type="date"></div>
-          <div class="f"><label>To</label><input id="rTo" type="date"></div>
-        </div>
-        <button class="btn sec" id="pdfBtn" onclick="downloadPdf()">Download PDF</button>
-        <div style="font-size:11.5px;color:var(--mute);margin-top:9px">
-          Planned, pending and completed work. Leave the dates blank for everything.
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="h">Add a plan</div>
+    <!-- ADD PLAN -->
+    <div class="view" id="vplan">
+      <div class="ttl">Add a plan</div>
+      <div class="sub">Schedule work for yourself — it lands straight in the sheet.</div>
+      <div class="card" style="max-width:620px">
         <div class="f"><label>Area</label>
           <input id="pArea" list="areaList" placeholder="Type or pick"><datalist id="areaList"></datalist></div>
         <div class="f"><label>Work label</label>
@@ -220,6 +273,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0
         <button class="btn" id="planBtn" onclick="savePlan()">Save plan</button>
       </div>
     </div>
+
+    <!-- REPORT -->
+    <div class="view" id="vreport">
+      <div class="ttl">My report</div>
+      <div class="sub">Planned, pending and completed work as a PDF you can share.</div>
+      <div class="card" style="max-width:620px">
+        <div class="grid2">
+          <div class="f"><label>From</label><input id="rFrom" type="date"></div>
+          <div class="f"><label>To</label><input id="rTo" type="date"></div>
+        </div>
+        <button class="btn" id="pdfBtn" onclick="downloadPdf()">Download PDF</button>
+        <div style="font-size:12px;color:var(--mute);margin-top:11px">Leave the dates blank for your entire record.</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -260,7 +328,7 @@ var DEFAULT_API = 'https://script.google.com/macros/s/AKfycbzE3jjAONZ7a12Qsicp-c
 
 var LS_URL='spmm_land_api', LS_NAME='spmm_land_name',
     LS_BOOT='spmm_land_boot', LS_WORK='spmm_land_work';
-var API='', ME='', ROWS=[], ALL=[], HFILTER='all', SCOPE='day', DB={}, bootDone=false;
+var API='', ME='', ROWS=[], ALL=[], HFILTER='done', SCOPE='day', DB={}, bootDone=false;
 
 function $(i){return document.getElementById(i)}
 /* Safe setters. A renamed/removed element used to throw
@@ -408,6 +476,7 @@ function fillPickers(){
 function autoEnter(name){
   ME=name;
   $('gate').style.display='none'; $('app').style.display='';
+  $('nav').style.display=''; go('home');
   $('who').textContent=ME; $('switchBtn').style.display='';
   $('pDate').value=todayStr();
   var painted=false;
@@ -439,7 +508,22 @@ function enter(){
 function signOut(){
   try{ localStorage.removeItem(LS_NAME); localStorage.removeItem(LS_WORK+'_'+ME); }catch(e){}
   ME=''; $('app').style.display='none'; $('gate').style.display='';
+  $('nav').style.display='none';
   $('who').textContent=''; $('switchBtn').style.display='none';
+}
+
+/* ---------------- navigation ---------------- */
+var VIEW='home';
+function go(v){
+  VIEW=v;
+  ['home','pending','done','plan','report'].forEach(function(x){
+    var el=$('v'+x); if(el) el.className='view'+(x===v?' on':'');
+  });
+  var links=document.querySelectorAll('.nav a');
+  Array.prototype.forEach.call(links,function(a){
+    a.className = (a.getAttribute('data-v')===v) ? 'on' : '';
+  });
+  window.scrollTo(0,0);
 }
 
 /* ---------------- my work ---------------- */
@@ -506,6 +590,25 @@ function renderAll(d){
   setText('kOver', t.overdue||0);
   renderWork({rows:d.pending||[]});
   renderHist();
+  renderUrgent();
+  setText('navPend', (d.pending||[]).length);
+}
+
+/* Overview shows only what actually needs doing next. */
+function renderUrgent(){
+  var top=ROWS.slice(0,4);
+  if(!top.length){ setHtml('urgent','<div class="blank">Nothing pending \ud83c\udf89</div>'); return; }
+  var s='';
+  top.forEach(function(r){
+    s+='<div class="hrow"><div class="hd">';
+    s+='<div class="h1">'+esc(r.label||'Task')+'</div>';
+    s+='<div class="h2">'+esc(r.area||'')+(r.pdate?' \u00b7 planned '+esc(r.pdate):'')+'</div>';
+    s+='</div><span class="tag '+(r.overdue?'r':'a')+'">'+(r.overdue?r.daysLate+'d late':'Pending')+'</span></div>';
+  });
+  if(ROWS.length>top.length)
+    s+='<div style="text-align:center;margin-top:12px"><button class="btn sec" onclick="go(\'pending\')">See all '+ROWS.length+' pending</button></div>';
+  else s+='<div style="text-align:center;margin-top:12px"><button class="btn sec" onclick="go(\'pending\')">Open pending work</button></div>';
+  setHtml('urgent', s);
 }
 
 function tagFor(st){
@@ -617,7 +720,7 @@ function savePlan(){
       if(res && res.ok){
         toast('Plan saved ✓','ok');
         $('pLabel').value=''; $('pText').value='';
-        loadWork(false);
+        loadWork(false); go('pending');
       } else toast(explain(res),'err');
     }).catch(function(e){ busy(false); b.disabled=false; toast(e.message,'err') });
 }
